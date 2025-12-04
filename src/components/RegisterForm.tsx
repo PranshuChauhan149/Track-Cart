@@ -4,6 +4,7 @@ import {
   Eye,
   EyeOff,
   Leaf,
+  Loader2,
   Lock,
   LogIn,
   Mail,
@@ -15,16 +16,19 @@ import Image from "next/image";
 
 import { motion } from "framer-motion";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 type propType = {
   nextStep: (s: number) => void;
 };
 const RegisterFrom = ({ nextStep }: propType) => {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
-
-  const handleSubmit = async (e: React.FocusEvent) => {
+  const [loading, setLoading] = useState(false);
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    setLoading(true);
     e.preventDefault();
     try {
       const result = await axios.post("/api/auth/register", {
@@ -33,7 +37,12 @@ const RegisterFrom = ({ nextStep }: propType) => {
         password,
       });
       console.log(result.data);
-    } catch (error) {}
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+
+      setLoading(false);
+    }
   };
 
   return (
@@ -129,7 +138,7 @@ const RegisterFrom = ({ nextStep }: propType) => {
           const formValidation = name !== "" && email !== "" && password !== "";
           return (
             <button
-              disabled={!formValidation}
+              disabled={!formValidation || loading}
               className={`w-full font-semibold py-3 rounded-lg transition-all duration-200 shadow-md inline-flex items-center justify-center gap-2  
     ${
       formValidation
@@ -138,7 +147,11 @@ const RegisterFrom = ({ nextStep }: propType) => {
     }
   `}
             >
-              Register
+              {loading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                "Register"
+              )}
             </button>
           );
         })()}
@@ -169,7 +182,13 @@ const RegisterFrom = ({ nextStep }: propType) => {
 
         <p className="text-gray-600 mt-6 text-sm flex items-center justify-center gap-1">
           Already have an account ? <LogIn className="w-4 h-4" />
-          <span className="text-green-500 font-bold"> Sign in</span>
+          <span
+            className="text-green-500 font-bold"
+            onClick={() => router.push("/login")}
+          >
+            {" "}
+            Sign in
+          </span>
         </p>
       </motion.form>
     </div>
