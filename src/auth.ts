@@ -31,8 +31,29 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         };
       },
     }),
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    }),
   ],
   callbacks: {
+    async signIn({ user, account }) {
+      if (account?.provider == "google") {
+        await connectDb();
+        let dbuser = await User.findOne({ email: user.email });
+        if (!dbuser) {
+          dbuser = await User.create({
+            name: user.name,
+            email: user.email,
+            image: user.image,
+          });
+        }
+        user.id = dbuser._id.toString();
+        user.role = dbuser.role;
+      }
+      return true;
+    },
+
     jwt({ token, user }) {
       if (user) {
         (token.id = user.id),
