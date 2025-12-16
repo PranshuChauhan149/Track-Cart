@@ -1,7 +1,27 @@
+import { auth } from "@/auth";
+import connectDb from "@/lib/DB";
+import User from "@/models/user.model";
+import { NextRequest, NextResponse } from "next/server";
 
+export async function POST(req: NextRequest) {
+  try {
+    await connectDb();
+    const { role, moblie } = await req.json();
+    const session = await auth();
+    const user = await User.findOneAndUpdate(
+      { email: session?.user?.email },
+      { role, moblie },
+      { new: true }
+    );
 
-
-
-export async function  PO(params:type) {
-  
+    if (!user) {
+      return NextResponse.json({ message: "user not found" }, { status: 400 });
+    }
+    return NextResponse.json(user, { status: 200 });
+  } catch (error) {
+    return NextResponse.json(
+      { message: `edit role and moblie ${error} not found` },
+      { status: 400 }
+    );
+  }
 }
