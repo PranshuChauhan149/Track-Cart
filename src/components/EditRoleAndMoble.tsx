@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Bike, User, UserCog, CheckCircle, Phone } from "lucide-react";
 import { motion } from "framer-motion";
 import axios from "axios";
+import { redirect } from "next/dist/server/api-utils";
 
 const EditRoleAndMoble = () => {
   const [selectedRole, setSelectedRole] = useState("");
@@ -33,7 +34,7 @@ const EditRoleAndMoble = () => {
         role: selectedRole,
         mobile,
       });
-      console.log(res.data);
+      redirect("/");
     } catch (error) {
       console.log(error);
     }
@@ -130,7 +131,8 @@ const EditRoleAndMoble = () => {
         animate={{ opacity: 1, y: 0 }}
         className="mt-10 flex justify-center"
       >
-        <button onClick={handleEdit}
+        <button
+          onClick={handleEdit}
           disabled={!selectedRole || mobile.length !== 10}
           className={`rounded-xl px-10 py-3 font-semibold text-white transition-all
             ${

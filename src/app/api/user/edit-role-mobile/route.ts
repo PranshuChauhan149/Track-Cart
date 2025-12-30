@@ -6,11 +6,11 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
   try {
     await connectDb();
-    const { role, moblie } = await req.json();
+    const { role, mobile } = await req.json();
     const session = await auth();
     const user = await User.findOneAndUpdate(
       { email: session?.user?.email },
-      { role, moblie },
+      { role, mobile },
       { new: true }
     );
 

@@ -48,7 +48,6 @@ const RegisterFrom = ({ nextStep }: propType) => {
         password,
       });
 
- 
       router.push("/login");
     } catch (err: any) {
       setError(
@@ -161,14 +160,14 @@ const RegisterFrom = ({ nextStep }: propType) => {
         </div>
 
         {/* Google Sign In */}
- <button
-  type="button"
-  onClick={() => signIn("google", { callbackUrl: "/" })}
-  className="w-full flex items-center justify-center gap-3 border py-3 rounded-xl bg-white hover:bg-gray-50"
->
-  <Image src={googleImage} width={20} height={20} alt="google" />
-  Continue with Google
-</button>
+        <button
+          type="button"
+          onClick={() => signIn("google", { callbackUrl: "/" })}
+          className="w-full flex items-center justify-center gap-3 border py-3 rounded-xl bg-white hover:bg-gray-50"
+        >
+          <Image src={googleImage} width={20} height={20} alt="google" />
+          Continue with Google
+        </button>
 
         {/* Login Redirect */}
         <p className="text-gray-600 mt-6 text-sm flex items-center justify-center gap-1">

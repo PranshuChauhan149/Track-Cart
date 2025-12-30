@@ -1,6 +1,6 @@
 "use client";
 import { Eye, EyeOff, Leaf, Loader2, Lock, LogIn, Mail } from "lucide-react";
-import React, { FormEvent, useState } from "react";
+import React, { FormEvent, useEffect, useState } from "react";
 import googleImage from "@/assesst/google.png";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -17,17 +17,19 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // ✅ Auto redirect if already logged in
-  if (status === "authenticated") {
-    router.push("/");
-  }
+  // ✅ Redirect only once when authenticated
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.replace("/");
+    }
+  }, [status, router]);
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
 
     if (!email || !password) return;
-    router.push("/");
+
     setLoading(true);
 
     try {
@@ -38,11 +40,11 @@ const Login = () => {
       });
 
       if (!res?.error) {
-        router.push("/");
+        router.replace("/");
       } else {
         setError("Invalid email or password");
       }
-    } catch (err) {
+    } catch {
       setError("Something went wrong. Try again.");
     } finally {
       setLoading(false);
@@ -107,14 +109,12 @@ const Login = () => {
           )}
         </div>
 
-        {/* ✅ Error Message */}
         {error && (
           <p className="text-red-500 text-sm text-center font-medium">
             {error}
           </p>
         )}
 
-        {/* Login Button */}
         <button
           disabled={!email || !password || loading}
           className={`w-full font-semibold py-3 rounded-lg flex justify-center items-center gap-2  
@@ -128,14 +128,12 @@ const Login = () => {
           {loading ? <Loader2 className="animate-spin" /> : "Login"}
         </button>
 
-        {/* Divider */}
         <div className="flex items-center gap-2 text-gray-400 text-sm mt-2">
           <span className="flex-1 h-px bg-gray-200" />
           OR
           <span className="flex-1 h-px bg-gray-200" />
         </div>
 
-        {/* ✅ Google Login FIXED */}
         <button
           type="button"
           onClick={() => signIn("google")}
@@ -145,7 +143,6 @@ const Login = () => {
           Continue with Google
         </button>
 
-        {/* Register Redirect */}
         <p className="text-gray-600 mt-6 text-sm flex items-center justify-center gap-1">
           Want to create an account?
           <LogIn className="w-4 h-4" />

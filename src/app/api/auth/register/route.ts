@@ -7,7 +7,14 @@ export async function POST(req: NextRequest) {
   try {
     await connectDb();
 
-    const { name, email, password } = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ message: "Invalid JSON body" }, { status: 400 });
+    }
+
+    const { name, email, password } = body;
 
     if (!name || !email || !password) {
       return NextResponse.json(
@@ -16,17 +23,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const existUser = await User.findOne({ email });
-    if (existUser) {
+    if (typeof password !== "string" || password.length < 6) {
       return NextResponse.json(
-        { message: "Email already exists!" },
+        { message: "Password must be at least 6 characters" },
         { status: 400 }
       );
     }
 
-    if (password.length < 6) {
+    const normalizedEmail = email.toLowerCase();
+
+    const existUser = await User.findOne({ email: normalizedEmail });
+    if (existUser) {
       return NextResponse.json(
-        { message: "Password must be at least 6 characters" },
+        { message: "Email already exists!" },
         { status: 400 }
       );
     }
@@ -35,7 +44,7 @@ export async function POST(req: NextRequest) {
 
     const user = await User.create({
       name,
-      email,
+      email: normalizedEmail,
       password: hashPassword,
     });
 
@@ -43,13 +52,23 @@ export async function POST(req: NextRequest) {
     delete safeUser.password;
 
     return NextResponse.json(
-        { message: "User registered successfully", user: safeUser },
-        { status: 200 }
+      { message: "User registered successfully", user: safeUser },
+      { status: 201 }
     );
 
-  } catch (error) {
+  } catch (error: any) {
+    // Handle duplicate key race condition
+    if (error?.code === 11000) {
+      return NextResponse.json(
+        { message: "Email already exists!" },
+        { status: 400 }
+      );
+    }
+
+    console.error("Register error:", error);
+
     return NextResponse.json(
-      { message: "Register error", error: String(error) },
+      { message: "Internal server error" },
       { status: 500 }
     );
   }
