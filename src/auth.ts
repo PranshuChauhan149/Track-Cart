@@ -29,7 +29,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const user = await User.findOne({ email });
         if (!user) throw new Error("User does not exist");
 
-        const isMatch = await bcrypt.compare(credentials.password, user.password);
+        const isMatch = await bcrypt.compare(
+          credentials.password,
+          user.password
+        );
         if (!isMatch) throw new Error("Incorrect password");
 
         return {
@@ -77,7 +80,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return true;
     },
 
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user?.id) {
         await connectDb();
         const dbUser = await User.findById(user.id);
@@ -87,6 +90,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           token.email = dbUser.email;
           token.role = dbUser.role;
         }
+      }
+      if (trigger == "update") {
+        token.role = session.role;
       }
       return token;
     },

@@ -4,9 +4,13 @@ import React, { useState } from "react";
 import { Bike, User, UserCog, CheckCircle, Phone } from "lucide-react";
 import { motion } from "framer-motion";
 import axios from "axios";
-import { redirect } from "next/dist/server/api-utils";
+import { useRouter } from "next/navigation";
+
+import { useSession } from "next-auth/react";
 
 const EditRoleAndMoble = () => {
+  const { update } = useSession();
+  const router = useRouter();
   const [selectedRole, setSelectedRole] = useState("");
   const [mobile, setMobile] = useState("");
   const [error, setError] = useState("");
@@ -34,7 +38,8 @@ const EditRoleAndMoble = () => {
         role: selectedRole,
         mobile,
       });
-      redirect("/");
+      await update({ rolee: selectedRole });
+      router.push("/");
     } catch (error) {
       console.log(error);
     }

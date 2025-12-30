@@ -1,6 +1,9 @@
 import { auth } from "@/auth";
+import AdminDashboard from "@/components/AdminDashboard";
+import DeliveryBoy from "@/components/DeliveryBoy";
 import EditRoleAndMoble from "@/components/EditRoleAndMoble";
 import Nav from "@/components/Nav";
+import UserDashboard from "@/components/UserDashboard";
 import connectDb from "@/lib/DB";
 import User from "@/models/user.model";
 import React from "react";
@@ -28,7 +31,19 @@ const Home = async () => {
     return <EditRoleAndMoble />;
   }
 
-  return <Nav user={plainUser} />;
+  return (
+    <>
+      <Nav user={plainUser} />
+
+      {plainUser.role === "user" ? (
+        <UserDashboard />
+      ) : plainUser.role === "admin" ? (
+        <AdminDashboard />
+      ) : (
+        <DeliveryBoy />
+      )}
+    </>
+  );
 };
 
 export default Home;
