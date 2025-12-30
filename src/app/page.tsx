@@ -14,7 +14,8 @@ const Home = async () => {
   }
 
   const user = await User.findById(session?.user?.id);
-  console.log(user);
+
+  const plainUser = JSON.parse(JSON.stringify(user));
 
   if (!user) {
     return null; // let middleware handle it
@@ -27,7 +28,7 @@ const Home = async () => {
     return <EditRoleAndMoble />;
   }
 
-  return <Nav user={user} />;
+  return <Nav user={plainUser} />;
 };
 
 export default Home;
