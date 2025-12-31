@@ -16,6 +16,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { signOut } from "next-auth/react";
 import { createPortal } from "react-dom";
+import { useSelector } from "react-redux";
+import { RootState } from "@reduxjs/toolkit/query";
 
 interface IUser {
   _id?: mongoose.Types.ObjectId;
@@ -28,6 +30,7 @@ interface IUser {
 }
 
 const Nav = ({ user }: { user: IUser }) => {
+  const { cartData } = useSelector((state: RootState) => state.cart);
   const [open, setOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -148,12 +151,12 @@ const Nav = ({ user }: { user: IUser }) => {
               </button>
 
               <Link
-                href="/cart"
+                href="/user/cart"
                 className="relative flex items-center justify-center w-11 h-11 rounded-full bg-white/20 hover:bg-white/30 text-white"
               >
                 <ShoppingCart className="w-6 h-6" />
                 <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] px-1 rounded-full bg-red-500 text-white text-xs font-bold flex items-center justify-center shadow-md">
-                  0
+                  {cartData?.length}
                 </span>
               </Link>
             </>

@@ -91,9 +91,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           token.role = dbUser.role;
         }
       }
-      if (trigger == "update") {
+      if (trigger === "update" && session?.role) {
         token.role = session.role;
       }
+
       return token;
     },
 
