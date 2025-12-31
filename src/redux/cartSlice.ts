@@ -14,10 +14,18 @@ export interface IGrocery {
 
 interface ICartSlice {
   cartData: IGrocery[];
+  subTotal: number;
+  deliveryFee: number;
+  finalTotal: number;
 }
+
+const TAX_RATE = 0.05;
 
 const initialState: ICartSlice = {
   cartData: [],
+  subTotal: 0,
+  deliveryFee: 40,
+  finalTotal: 40,
 };
 
 export const cartSlice = createSlice({
@@ -34,11 +42,15 @@ export const cartSlice = createSlice({
       } else {
         state.cartData.push(action.payload);
       }
+      cartSlice.caseReducers.calculateTotals(state);
     },
+
     incrementQuantity: (state, action: PayloadAction<string>) => {
       const item = state.cartData.find((i) => i._id === action.payload);
       if (item) item.quantity += 1;
+      cartSlice.caseReducers.calculateTotals(state);
     },
+
     decrementQuantity: (state, action: PayloadAction<string>) => {
       const itemIndex = state.cartData.findIndex(
         (i) => i._id === action.payload
@@ -48,15 +60,31 @@ export const cartSlice = createSlice({
         if (state.cartData[itemIndex].quantity > 1) {
           state.cartData[itemIndex].quantity -= 1;
         } else {
-          state.cartData.splice(itemIndex, 1); // remove if quantity becomes 0
+          state.cartData.splice(itemIndex, 1);
         }
       }
+
+      cartSlice.caseReducers.calculateTotals(state); // ✅ added
     },
 
     removeFromCart: (state, action: PayloadAction<string>) => {
       state.cartData = state.cartData.filter(
         (item) => item._id !== action.payload
       );
+      cartSlice.caseReducers.calculateTotals(state);
+    },
+
+    calculateTotals: (state) => {
+      state.subTotal = state.cartData.reduce(
+        (sum, item) => sum + Number(item.price) * item.quantity,
+        0
+      );
+
+      state.deliveryFee = state.subTotal >= 100 ? 40 : 0;
+
+      const tax = state.subTotal * TAX_RATE;
+
+      state.finalTotal = state.subTotal + tax + state.deliveryFee;
     },
   },
 });
@@ -66,5 +94,7 @@ export const {
   incrementQuantity,
   decrementQuantity,
   removeFromCart,
+  calculateTotals,
 } = cartSlice.actions;
+
 export default cartSlice.reducer;

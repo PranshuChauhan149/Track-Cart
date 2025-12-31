@@ -13,7 +13,9 @@ const useGetMe = () => {
     const getMe = async () => {
       try {
         const res = await axios.get("/api/me");
-        dispatch(setUserData(res.data));
+      
+        
+        dispatch(setUserData(res.data.user));
       } catch (err) {
         console.error(err);
       }
