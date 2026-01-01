@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -11,6 +11,10 @@ import {
   Building,
   Navigation,
   Search,
+  LocateFixed,
+  Loader2,
+  CreditCard,
+  Wallet,
 } from "lucide-react";
 import "leaflet/dist/leaflet.css";
 import { motion } from "framer-motion";
@@ -18,7 +22,8 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
-import L, { LatLngExpression } from "leaflet";
+import L from "leaflet";
+import { OpenStreetMapProvider } from "leaflet-geosearch";
 
 const markerIcon = new L.Icon({
   iconUrl: "https://cdn-icons-png.flaticon.com/128/684/684908.png",
@@ -28,8 +33,16 @@ const markerIcon = new L.Icon({
 });
 
 const Page = () => {
-  const { userData } = useSelector((state: RootState) => state.user);
+  const [paymentMethod, setPaymentMethod] = useState<"online" | "cod">(
+    "online"
+  );
 
+  const [searchquery, setSearchQuery] = useState("");
+
+  const { userData } = useSelector((state: RootState) => state.user);
+  const { subTotal, deliveryFee, finalTotal } = useSelector(
+    (state: RootState) => state.cart
+  );
   const [address, setAddress] = useState({
     fullName: "",
     mobile: "",
@@ -41,11 +54,30 @@ const Page = () => {
 
   const [position, setPosition] = useState<[number, number] | null>(null);
   const [loadingLocation, setLoadingLocation] = useState(false);
+  const [searching, setSearching] = useState(false);
+
   const router = useRouter();
+  const mapRef = useRef<any>(null);
 
-  useEffect(() => {
+  const reverseGeocode = async (lat: number, lon: number) => {
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=en`
+      );
+      const data = await res.json();
+
+      setAddress((prev) => ({
+        ...prev,
+        city: data.address.city || data.address.town || "",
+        state: data.address.state || "",
+        pincode: data.address.postcode || "",
+        fullAddress: data.display_name || "",
+      }));
+    } catch {}
+  };
+
+  const fetchCurrentLocation = () => {
     if (!navigator.geolocation) return;
-
     setLoadingLocation(true);
 
     navigator.geolocation.getCurrentPosition(
@@ -54,27 +86,36 @@ const Page = () => {
         const lon = pos.coords.longitude;
 
         setPosition([lat, lon]);
-
-        try {
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=en`
-          );
-          const data = await res.json();
-
-          setAddress((prev) => ({
-            ...prev,
-            city: data.address.city || data.address.town || "",
-            state: data.address.state || "",
-            pincode: data.address.postcode || "",
-            fullAddress: data.display_name || "",
-          }));
-        } catch (e) {}
-
+        mapRef.current?.flyTo([lat, lon], 14);
+        await reverseGeocode(lat, lon);
         setLoadingLocation(false);
       },
       () => setLoadingLocation(false)
     );
+  };
+
+  useEffect(() => {
+    fetchCurrentLocation();
   }, []);
+
+  const handleSearch = async () => {
+    if (!searchquery) return;
+    setSearching(true);
+
+    const provider = new OpenStreetMapProvider();
+    const result = await provider.search({ query: searchquery });
+
+    if (result?.length) {
+      const lat = result[0].y;
+      const lon = result[0].x;
+
+      setPosition([lat, lon]);
+      mapRef.current?.flyTo([lat, lon], 14);
+      await reverseGeocode(lat, lon);
+    }
+
+    setSearching(false);
+  };
 
   useEffect(() => {
     if (userData) {
@@ -87,150 +128,217 @@ const Page = () => {
   }, [userData]);
 
   return (
-    <div className="w-[92%] p-16 md:w-[80%] py-10 relative">
-      <motion.div
-        onClick={() => router.back()}
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        className="flex items-center gap-2 cursor-pointer text-gray-700 hover:text-black w-fit"
-      >
-        <ArrowLeft className="w-5 h-5" />
-        <span className="text-sm font-medium">Back</span>
-      </motion.div>
+    <div className="w-full px-4 py-10 flex justify-center">
+      <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* LEFT - ADDRESS */}
+        <div className="md:col-span-2">
+          <motion.div
+            onClick={() => router.back()}
+            className="flex items-center gap-2 cursor-pointer text-gray-700 hover:text-black w-fit"
+          >
+            <ArrowLeft className="w-5 h-5" /> Back
+          </motion.div>
 
-      <motion.h1
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="text-2xl font-bold mt-4 text-center text-green-500"
-      >
-        CheckOut
-      </motion.h1>
+          <h1 className="text-2xl font-bold mt-4 text-center text-green-500">
+            CheckOut
+          </h1>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-gray-100 mt-6 max-w-xl"
-      >
-        <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-          <MapPin className="text-green-700" /> Delivery Address
-        </h2>
+          <div className="bg-white rounded-2xl shadow-lg p-6 border mt-6">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <MapPin className="text-green-700" /> Delivery Address
+            </h2>
 
-        <div className="space-y-4">
-          {/* Full Name */}
-          <div className="relative">
-            <User className="absolute left-3 top-3 text-green-600" size={18} />
-            <input
-              type="text"
-              value={address.fullName}
-              onChange={(e) =>
-                setAddress({ ...address, fullName: e.target.value })
-              }
-              className="pl-10 w-full border rounded-lg p-3 text-sm bg-gray-50"
-              placeholder="Full Name"
-            />
-          </div>
+            <div className="space-y-4">
+              <div className="relative">
+                <User
+                  className="absolute left-3 top-3 text-green-600"
+                  size={18}
+                />
+                <input
+                  value={address.fullName}
+                  onChange={(e) =>
+                    setAddress({ ...address, fullName: e.target.value })
+                  }
+                  className="pl-10 w-full border rounded-lg p-3 bg-gray-50"
+                  placeholder="Full Name"
+                />
+              </div>
 
-          {/* Mobile */}
-          <div className="relative">
-            <Phone className="absolute left-3 top-3 text-green-600" size={18} />
-            <input
-              type="text"
-              value={address.mobile}
-              onChange={(e) =>
-                setAddress({ ...address, mobile: e.target.value })
-              }
-              className="pl-10 w-full border rounded-lg p-3 text-sm bg-gray-50"
-              placeholder="Mobile Number"
-            />
-          </div>
+              <div className="relative">
+                <Phone
+                  className="absolute left-3 top-3 text-green-600"
+                  size={18}
+                />
+                <input
+                  value={address.mobile}
+                  onChange={(e) =>
+                    setAddress({ ...address, mobile: e.target.value })
+                  }
+                  className="pl-10 w-full border rounded-lg p-3 bg-gray-50"
+                  placeholder="Mobile"
+                />
+              </div>
 
-          {/* Full Address */}
-          <div className="relative">
-            <Home className="absolute left-3 top-3 text-green-600" size={18} />
-            <input
-              type="text"
-              value={address.fullAddress}
-              onChange={(e) =>
-                setAddress({ ...address, fullAddress: e.target.value })
-              }
-              className="pl-10 w-full border rounded-lg p-3 text-sm bg-gray-50"
-              placeholder="Full Address"
-            />
-          </div>
+              <div className="relative">
+                <Home
+                  className="absolute left-3 top-3 text-green-600"
+                  size={18}
+                />
+                <input
+                  value={address.fullAddress}
+                  onChange={(e) =>
+                    setAddress({ ...address, fullAddress: e.target.value })
+                  }
+                  className="pl-10 w-full border rounded-lg p-3 bg-gray-50"
+                  placeholder="Full Address"
+                />
+              </div>
 
-          {/* City / State / Pincode */}
-          <div className="grid grid-cols-3 gap-3">
-            <div className="relative">
-              <Building className="absolute left-3 top-3 text-green-600" size={18} />
-              <input
-                type="text"
-                value={address.city}
-                onChange={(e) =>
-                  setAddress({ ...address, city: e.target.value })
-                }
-                className="pl-10 w-full border rounded-lg p-3 text-sm bg-gray-50"
-                placeholder="City"
-              />
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <input
+                  value={address.city}
+                  readOnly
+                  className="border rounded-lg p-3 bg-gray-50"
+                  placeholder="City"
+                />
+                <input
+                  value={address.state}
+                  readOnly
+                  className="border rounded-lg p-3 bg-gray-50"
+                  placeholder="State"
+                />
+                <input
+                  value={address.pincode}
+                  readOnly
+                  className="border rounded-lg p-3 bg-gray-50"
+                  placeholder="Pincode"
+                />
+              </div>
+
+              <div className="flex gap-2">
+                <input
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search city area..."
+                  className="flex-1 border rounded-lg p-2"
+                />
+                <button
+                  onClick={handleSearch}
+                  disabled={searching}
+                  className="bg-green-600 text-white px-4 rounded-lg flex items-center gap-2 disabled:opacity-60"
+                >
+                  {searching && <Loader2 className="animate-spin" size={16} />}
+                  Search
+                </button>
+              </div>
+
+              <div className="relative mt-6 h-[330px] rounded-xl overflow-hidden">
+                {position && (
+                  <>
+                    <MapContainer
+                      ref={mapRef}
+                      center={position}
+                      zoom={13}
+                      className="w-full h-full"
+                    >
+                      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                      <Marker position={position} icon={markerIcon}>
+                        <Popup>Your delivery location</Popup>
+                      </Marker>
+                    </MapContainer>
+
+                    <button
+                      onClick={fetchCurrentLocation}
+                      disabled={loadingLocation}
+                      className="absolute bottom-4 right-4 z-[999] bg-green-600 text-white p-3 rounded-full shadow-lg"
+                    >
+                      {loadingLocation ? (
+                        <Loader2 className="animate-spin" />
+                      ) : (
+                        <LocateFixed />
+                      )}
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
-
-            <div className="relative">
-              <Navigation className="absolute left-3 top-3 text-green-600" size={18} />
-              <input
-                type="text"
-                value={address.state}
-                onChange={(e) =>
-                  setAddress({ ...address, state: e.target.value })
-                }
-                className="pl-10 w-full border rounded-lg p-3 text-sm bg-gray-50"
-                placeholder="State"
-              />
-            </div>
-
-            <div className="relative">
-              <Search className="absolute left-3 top-3 text-green-600" size={18} />
-              <input
-                type="text"
-                value={address.pincode}
-                onChange={(e) =>
-                  setAddress({ ...address, pincode: e.target.value })
-                }
-                className="pl-10 w-full border rounded-lg p-3 text-sm bg-gray-50"
-                placeholder="Pincode"
-              />
-            </div>
           </div>
+        </div>
 
-          {/* Search area */}
-          <div className="flex gap-2">
-            <input
-              type="text"
-              placeholder="search city area..."
-              className="flex-1 border rounded-lg p-2 text-sm"
-            />
-            <button className="bg-green-600 text-white px-4 rounded-lg">
-              Search
-            </button>
-          </div>
+        {/* RIGHT - PAYMENT */}
+        <div className="sticky top-24 h-fit">
+          <div className="bg-white rounded-2xl shadow-lg p-6 border">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <CreditCard className="text-green-600" /> Payment Method
+            </h2>
 
-          {/* Map */}
-          <div className="relative mt-6 h-[330px] rounded-xl overflow-hidden border-gray-100 shadow-inner">
-            {position && (
-              <MapContainer
-                className="w-full h-full"
-                center={position as LatLngExpression}
-                zoom={13}
-                scrollWheelZoom={false}
+            <div className="space-y-4">
+              {/* Pay Online */}
+              <button
+                onClick={() => setPaymentMethod("online")}
+                className={`flex items-center gap-3 w-full border rounded-lg p-3 transition-all ${
+                  paymentMethod === "online"
+                    ? "border-green-600 bg-green-50 shadow-sm"
+                    : "hover:bg-gray-50"
+                }`}
               >
-                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                <Marker position={position} icon={markerIcon}>
-                  <Popup>Your delivery location.  </Popup>
-                </Marker>
-              </MapContainer>
+                <CreditCard className="text-green-600" />
+                <span className="font-medium text-gray-700">
+                  Pay Online (Stripe)
+                </span>
+              </button>
+
+              {/* Cash on Delivery */}
+              <button
+                onClick={() => setPaymentMethod("cod")}
+                className={`flex items-center gap-3 w-full border rounded-lg p-3 transition-all ${
+                  paymentMethod === "cod"
+                    ? "border-green-600 bg-green-50 shadow-sm"
+                    : "hover:bg-gray-50"
+                }`}
+              >
+                <Wallet className="text-green-600" />
+                <span className="font-medium text-gray-700">
+                  Cash on Delivery
+                </span>
+              </button>
+            </div>
+
+            {/* Price summary */}
+            <div className="mt-6 space-y-2 text-sm text-gray-700">
+              <div className="flex justify-between">
+                <span>Subtotal</span>
+                <span>₹{subTotal}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Delivery Fee</span>
+                <span>₹{deliveryFee}</span>
+              </div>
+              <div className="border-t my-2" />
+              <div className="flex justify-between font-semibold text-base">
+                <span>Total</span>
+                <span>₹{finalTotal}</span>
+              </div>
+            </div>
+
+            {/* Action Button */}
+            {paymentMethod === "cod" ? (
+              <button
+                onClick={() => console.log("Place COD Order")}
+                className="mt-6 w-full bg-green-600 text-white py-3 rounded-xl hover:bg-green-700 transition"
+              >
+                Place Order (COD)
+              </button>
+            ) : (
+              <button
+                onClick={() => console.log("Proceed to online payment")}
+                className="mt-6 w-full bg-green-600 text-white py-3 rounded-xl hover:bg-green-700 transition"
+              >
+                Pay Now
+              </button>
             )}
           </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 };
