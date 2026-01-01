@@ -24,6 +24,7 @@ import { RootState } from "@/redux/store";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import L from "leaflet";
 import { OpenStreetMapProvider } from "leaflet-geosearch";
+import axios from "axios";
 
 const markerIcon = new L.Icon({
   iconUrl: "https://cdn-icons-png.flaticon.com/128/684/684908.png",
@@ -40,7 +41,7 @@ const Page = () => {
   const [searchquery, setSearchQuery] = useState("");
 
   const { userData } = useSelector((state: RootState) => state.user);
-  const { subTotal, deliveryFee, finalTotal } = useSelector(
+  const { subTotal, cartData, deliveryFee, finalTotal } = useSelector(
     (state: RootState) => state.cart
   );
   const [address, setAddress] = useState({
@@ -126,6 +127,43 @@ const Page = () => {
       }));
     }
   }, [userData]);
+
+  const handleCod = async () => {
+    try {
+      if (!userData?._id) return;
+
+      const payload = {
+        userId: userData._id,
+        items: cartData.map((item) => ({
+          grocery: item._id,
+          name: item.name,
+          price: item.price,
+          unit: item.unit,
+          image: item.image,
+          quantity: item.quantity,
+        })),
+        paymentMethod: "cod",
+        totalAmount: finalTotal,
+        address: {
+          fullName: address.fullName,
+          mobile: address.mobile,
+          city: address.city,
+          state: address.state,
+          pincode: address.pincode,
+          fullAddress: address.fullAddress,
+          latitude: position?.[0],
+          longitude: position?.[1],
+        },
+      };
+
+      const result = await axios.post("/api/user/order", payload);
+
+      console.log("Order placed:", result.data);
+      router.push("/user/order-success");
+    } catch (error) {
+      console.error("Order failed:", error);
+    }
+  };
 
   return (
     <div className="w-full px-4 py-10 flex justify-center">
@@ -323,7 +361,7 @@ const Page = () => {
             {/* Action Button */}
             {paymentMethod === "cod" ? (
               <button
-                onClick={() => console.log("Place COD Order")}
+                onClick={handleCod}
                 className="mt-6 w-full bg-green-600 text-white py-3 rounded-xl hover:bg-green-700 transition"
               >
                 Place Order (COD)
