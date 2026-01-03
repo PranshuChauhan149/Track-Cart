@@ -165,6 +165,48 @@ const Page = () => {
     }
   };
 
+  const handleOnlinePayment = async () => {
+  try {
+    if (!userData?._id) return;
+
+    const payload = {
+      userId: userData._id,
+      items: cartData.map((item) => ({
+        grocery: item._id,
+        name: item.name,
+        price: item.price,
+        unit: item.unit,
+        image: item.image,
+        quantity: item.quantity,
+      })),
+      paymentMethod: "online", // ✅ FIXED
+      totalAmount: finalTotal,
+      address: {
+        fullName: address.fullName,
+        mobile: address.mobile,
+        city: address.city,
+        state: address.state,
+        pincode: address.pincode,
+        fullAddress: address.fullAddress,
+        latitude: position?.[0],
+        longitude: position?.[1],
+      },
+    };
+
+    const result = await axios.post("/api/user/payment", payload);
+
+    if (result.data?.url) {
+      window.location.href = result.data.url; // ✅ Stripe redirect
+    } else {
+      console.error("Stripe URL missing", result.data);
+    }
+
+  } catch (error) {
+    console.error("Online payment failed:", error);
+  }
+};
+
+
   return (
     <div className="w-full px-4 py-10 flex justify-center">
       <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -368,7 +410,7 @@ const Page = () => {
               </button>
             ) : (
               <button
-                onClick={() => console.log("Proceed to online payment")}
+                onClick={handleOnlinePayment}
                 className="mt-6 w-full bg-green-600 text-white py-3 rounded-xl hover:bg-green-700 transition"
               >
                 Pay Now

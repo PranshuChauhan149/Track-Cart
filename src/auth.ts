@@ -81,8 +81,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
 
     async jwt({ token, user, trigger, session }) {
+      await connectDb();
+
+      // First login
       if (user?.id) {
-        await connectDb();
         const dbUser = await User.findById(user.id);
         if (dbUser) {
           token.id = dbUser._id.toString();
@@ -91,6 +93,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           token.role = dbUser.role;
         }
       }
+
+      // Refresh role on every request
+      if (token?.id) {
+        const dbUser = await User.findById(token.id).select("role");
+        if (dbUser) {
+          token.role = dbUser.role;
+        }
+      }
+
+      // Manual session update support
       if (trigger === "update" && session?.role) {
         token.role = session.role;
       }

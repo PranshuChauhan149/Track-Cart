@@ -33,10 +33,16 @@ const OrderSuccess = () => {
 
   return (
     <div className="min-h-screen relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-green-50 to-white">
-      
       {/* Floating blobs */}
-      <motion.div {...floating} className="absolute w-64 h-64 bg-green-200 rounded-full blur-3xl opacity-30 -top-10 -left-10" />
-      <motion.div {...floating} transition={{ ...floating.transition, delay: 1 }} className="absolute w-64 h-64 bg-green-300 rounded-full blur-3xl opacity-20 top-1/2 -right-10" />
+      <motion.div
+        {...floating}
+        className="absolute w-64 h-64 bg-green-200 rounded-full blur-3xl opacity-30 -top-10 -left-10"
+      />
+      <motion.div
+        {...floating}
+        transition={{ ...floating.transition, delay: 1 }}
+        className="absolute w-64 h-64 bg-green-300 rounded-full blur-3xl opacity-20 top-1/2 -right-10"
+      />
 
       {/* Card */}
       <motion.div
@@ -72,7 +78,7 @@ const OrderSuccess = () => {
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            onClick={() => router.push("/orders")}
+            onClick={() => router.push("/my-order")}
             className="w-full bg-green-600 text-white py-3 rounded-xl hover:bg-green-700 transition"
           >
             View My Orders

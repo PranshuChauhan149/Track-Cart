@@ -292,9 +292,12 @@ const Nav = ({ user }: { user: IUser }) => {
                       <User className="w-4 h-4" /> Profile
                     </button>
                     {user.role == "user" && (
-                      <button className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100">
+                      <Link
+                        href={"/user/my-order"}
+                        className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
+                      >
                         <ShoppingBag className="w-4 h-4" /> Orders
-                      </button>
+                      </Link>
                     )}
                     <button
                       onClick={() => signOut({ callbackUrl: "/login" })}
