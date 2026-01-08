@@ -210,7 +210,7 @@ const Page = () => {
   return (
     <div className="w-full px-4 py-10 flex justify-center">
       <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-8">
-        {/* LEFT - ADDRESS */}
+        {/* LEFT - ADDRESS kdkdkd*/}
         <div className="md:col-span-2">
           <motion.div
             onClick={() => router.back()}
