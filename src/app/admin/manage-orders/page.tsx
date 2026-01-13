@@ -35,6 +35,7 @@ const itemAnim = {
 };
 
 const ManageOrders = () => {
+  const [status,setStatus] = useState(["pending","out of delivery"]) 
   const [orders, setOrders] = useState<IOrder[]>([]);
 
   useEffect(() => {
@@ -116,7 +117,7 @@ const ManageOrders = () => {
                   {order.status}
                 </span>
 
-                <select
+               <select
                   value={order.status}
                   className="border rounded-md px-3 py-1 text-sm focus:ring-2 focus:ring-green-400"
                 >

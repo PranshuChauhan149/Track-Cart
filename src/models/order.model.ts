@@ -13,7 +13,7 @@ export interface IOrder {
     quantity: number;
   }[];
 
-  isPaid:boolean
+  isPaid: boolean
   totalAmount: number;
   paymentMethod: "cod" | "online";
 
@@ -27,7 +27,8 @@ export interface IOrder {
     latitude: number;
     longitude: number;
   };
-
+  assignment?: mongoose.Types.ObjectId
+  assignedDeliveryBoy?: mongoose.Types.ObjectId
   status: "pending" | "out_for_delivery" | "delivered";
 
   createdAt?: Date;
@@ -57,9 +58,9 @@ const OrderSchema = new Schema<IOrder>(
     totalAmount: { type: Number, required: true },
 
     paymentMethod: { type: String, enum: ["cod", "online"], required: true },
-    isPaid:{
-      type:Boolean,
-      default:false
+    isPaid: {
+      type: Boolean,
+      default: false
     },
 
     address: {
@@ -72,7 +73,19 @@ const OrderSchema = new Schema<IOrder>(
       latitude: { type: Number, required: true },
       longitude: { type: Number, required: true },
     },
+    assignment: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "DeliveryAssignment",
+      default:null
+    }
+    ,
 
+
+    assignedDeliveryBoy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
+    }
+    ,
     status: {
       type: String,
       enum: ["pending", "out_for_delivery", "delivered"],
