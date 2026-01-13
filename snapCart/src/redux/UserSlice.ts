@@ -1,8 +1,7 @@
-import { createSlice } from "@reduxjs/toolkit";
-import mongoose from "mongoose";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface IUser {
-  _id?: mongoose.Types.ObjectId;
+  _id?: string;
   name: string;
   email: string;
   password?: string;
@@ -14,15 +13,16 @@ interface IUser {
 interface IUserSlice {
   userData: IUser | null;
 }
+
 const initialState: IUserSlice = {
   userData: null,
 };
 
-export const userSlice = createSlice({
+const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
-    setUserData: (state, action) => {
+    setUserData: (state, action: PayloadAction<IUser | null>) => {
       state.userData = action.payload;
     },
   },

@@ -2,6 +2,9 @@
 import React, { useEffect, useState } from "react";
 import { ShoppingBag, Truck, Leaf } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { getsocket } from "@/lib/socket";
+import { useSelector } from "react-redux";
+import { RootState } from "@reduxjs/toolkit/query";
 
 export const slides = [
   {
@@ -32,8 +35,9 @@ export const slides = [
 
 const HeroSection = () => {
   const [current, setCurrent] = useState(0);
-
+const { userData } = useSelector((state: RootState) => state.user);
   useEffect(() => {
+    
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % slides.length);
     }, 4000);
@@ -42,6 +46,17 @@ const HeroSection = () => {
 
   const slide = slides[current];
   const Icon = slide.icon;
+
+   useEffect(() => {
+    console.log("hgjkl");
+    
+  if (!userData) return;
+
+  const socket = getsocket();
+  console.log(userData._id);
+  
+  socket.emit("identity", userData._id);
+}, [userData]);
 
   return (
     <div className="relative w-full h-[90vh] overflow-hidden">
