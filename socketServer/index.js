@@ -24,7 +24,7 @@ io.on("connection", (socket) => {
 
     try {
       const res = await axios.post(
-        "http://localhost:3000/api/socket/connect",
+        `${process.env.NEXT_BASE_URL}/api/socket/connect`,
         { userId, socketId: socket.id }
       );
 
@@ -35,6 +35,18 @@ io.on("connection", (socket) => {
       console.error("request failed:", err.response?.data || err.message);
     }
   });
+
+  socket.on("update-location", async ({ userId, latitude, longitude }) => {
+    const location = {
+      type: "Point",
+      coordinates: [longitude, latitude]
+    }
+    await axios.post(
+      `${process.env.NEXT_BASE_URL}/api/socket/update-location`,
+      { userId, location }
+    );
+
+  })
 
   socket.on("disconnect", () => {
     console.log("user disconnected: " + socket.id);
