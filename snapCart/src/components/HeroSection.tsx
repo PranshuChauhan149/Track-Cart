@@ -47,17 +47,7 @@ const { userData } = useSelector((state: RootState) => state.user);
   const slide = slides[current];
   const Icon = slide.icon;
 
-   useEffect(() => {
-    console.log("hgjkl");
-    
-  if (!userData) return;
-
-  const socket = getsocket();
-  console.log(userData._id);
-  
-  socket.emit("identity", userData._id);
-}, [userData]);
-
+ 
   return (
     <div className="relative w-full h-[90vh] overflow-hidden">
       <AnimatePresence mode="wait">
