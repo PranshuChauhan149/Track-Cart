@@ -2,6 +2,7 @@ import connectDb from "@/lib/DB";
 import User from "@/models/user.model";
 import Order from "@/models/order.model";
 import { NextRequest, NextResponse } from "next/server";
+import emitEventHandler from "@/lib/emitEventHandler";
 
 export async function POST(req: NextRequest) {
   try {
@@ -41,7 +42,7 @@ export async function POST(req: NextRequest) {
       address,
       status: "pending",
     });
-
+    await emitEventHandler("new-order",order)
     return NextResponse.json(
       {
         message: "Order placed successfully",

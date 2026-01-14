@@ -1,27 +1,43 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Bike, User, UserCog, CheckCircle, Phone } from "lucide-react";
 import { motion } from "framer-motion";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-
 import { useSession } from "next-auth/react";
 
 const EditRoleAndMoble = () => {
   const { update } = useSession();
   const router = useRouter();
+
   const [selectedRole, setSelectedRole] = useState("");
   const [mobile, setMobile] = useState("");
   const [error, setError] = useState("");
 
-  const roles = [
+  const [roles, setRoles] = useState([
     { id: "admin", label: "Admin", icon: UserCog },
     { id: "user", label: "User", icon: User },
     { id: "deliveryBoy", label: "Delivery Boy", icon: Bike },
-  ];
+  ]);
 
-  const handleMobileChange = (e) => {
+  useEffect(() => {
+    const checkForAdmin = async () => {
+      try {
+        const result = await axios.get("/api/check-for-admin");
+        if (result.data.exists === true) {
+          // Remove admin role if already exists
+          setRoles((prev) => prev.filter((r) => r.id !== "admin"));
+        }
+      } catch (error) {
+        console.log("Admin check failed:", error);
+      }
+    };
+
+    checkForAdmin();
+  }, []);
+
+  const handleMobileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, "");
     setMobile(value);
 
@@ -34,11 +50,12 @@ const EditRoleAndMoble = () => {
 
   const handleEdit = async () => {
     try {
-      const res = await axios.post("/api/user/edit-role-mobile", {
+      await axios.post("/api/user/edit-role-mobile", {
         role: selectedRole,
         mobile,
       });
-      await update({ rolee: selectedRole });
+
+      await update({ role: selectedRole });
       router.push("/");
     } catch (error) {
       console.log(error);
@@ -47,7 +64,6 @@ const EditRoleAndMoble = () => {
 
   return (
     <div className="flex flex-col min-h-screen w-full bg-gradient-to-br from-green-100 via-gray-100 to-green-50 p-6">
-      {/* Heading */}
       <motion.h1
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -57,7 +73,6 @@ const EditRoleAndMoble = () => {
         Select Your Role
       </motion.h1>
 
-      {/* Role cards */}
       <div className="flex flex-col md:flex-row justify-center items-center gap-6 mt-12">
         {roles.map((role, index) => {
           const Icon = role.icon;
@@ -105,12 +120,7 @@ const EditRoleAndMoble = () => {
         })}
       </div>
 
-      {/* Mobile input */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mt-14 mx-auto w-full max-w-md"
-      >
+      <motion.div className="mt-14 mx-auto w-full max-w-md">
         <label className="block mb-2 text-sm font-semibold text-gray-700">
           Mobile Number
         </label>
@@ -123,19 +133,14 @@ const EditRoleAndMoble = () => {
             value={mobile}
             onChange={handleMobileChange}
             placeholder="Enter 10-digit mobile number"
-            className="w-full rounded-xl border border-gray-300 bg-white py-3 pl-12 pr-4 text-gray-800 outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200"
+            className="w-full rounded-xl border border-gray-300 bg-white py-3 pl-12 pr-4"
           />
         </div>
 
         {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
       </motion.div>
 
-      {/* Continue button */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mt-10 flex justify-center"
-      >
+      <div className="mt-10 flex justify-center">
         <button
           onClick={handleEdit}
           disabled={!selectedRole || mobile.length !== 10}
@@ -146,9 +151,9 @@ const EditRoleAndMoble = () => {
                 : "bg-gray-400 cursor-not-allowed"
             }`}
         >
-          go to Home
+          Go to Home
         </button>
-      </motion.div>
+      </div>
     </div>
   );
 };

@@ -14,19 +14,18 @@ import {
   Truck,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { getsocket } from "@/lib/socket";
 
 const statusColors: any = {
   pending: "bg-yellow-100 text-yellow-700",
+  out_for_delivery: "bg-blue-100 text-blue-700",
   delivered: "bg-green-100 text-green-700",
   cancelled: "bg-red-100 text-red-700",
 };
 
 const container = {
   hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.08 },
-  },
+  show: { opacity: 1, transition: { staggerChildren: 0.08 } },
 };
 
 const itemAnim = {
@@ -35,8 +34,8 @@ const itemAnim = {
 };
 
 const ManageOrders = () => {
-  const [status,setStatus] = useState(["pending","out of delivery"]) 
   const [orders, setOrders] = useState<IOrder[]>([]);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   useEffect(() => {
     const getOrders = async () => {
@@ -50,6 +49,39 @@ const ManageOrders = () => {
     getOrders();
   }, []);
 
+  const handleStatusChange = async (orderId: string, newStatus: string) => {
+    try {
+      setUpdatingId(orderId);
+
+      setOrders((prev) =>
+        prev.map((o) => (o._id === orderId ? { ...o, status: newStatus } : o))
+      );
+
+      await axios.post(`/api/admin/update-order-status/${orderId}`, {
+        status: newStatus,
+      });
+    } catch (error) {
+      console.error("Failed to update order status", error);
+      alert("Failed to update order status");
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  useEffect(() => {
+    const socket = getsocket();
+    const handler = (order: IOrder) => {
+      setOrders((prev) => [order, ...prev]);
+    };
+
+    socket?.on("new-order", handler);
+
+    return () => {
+      socket?.off("new-order", handler);
+    };
+  }, []);
+console.log(orders);
+
   return (
     <motion.div
       initial="hidden"
@@ -57,7 +89,6 @@ const ManageOrders = () => {
       variants={container}
       className="min-h-screen bg-gray-50 px-6 py-8"
     >
-      {/* Header */}
       <motion.div variants={itemAnim} className="flex items-center gap-3 mb-8">
         <ArrowLeft className="cursor-pointer hover:text-green-600 transition" />
         <h1 className="text-2xl font-semibold">Manage Orders</h1>
@@ -71,7 +102,6 @@ const ManageOrders = () => {
             whileHover={{ scale: 1.01 }}
             className="bg-white rounded-2xl shadow-sm border p-6 transition"
           >
-            {/* Top */}
             <div className="flex justify-between items-start">
               <div className="space-y-1">
                 <div className="flex items-center gap-2 text-green-600 font-semibold">
@@ -114,21 +144,25 @@ const ManageOrders = () => {
                     statusColors[order.status]
                   }`}
                 >
-                  {order.status}
+                  {order.status.replaceAll("_", " ")}
                 </span>
 
-               <select
+                <select
                   value={order.status}
-                  className="border rounded-md px-3 py-1 text-sm focus:ring-2 focus:ring-green-400"
+                  disabled={updatingId === order._id}
+                  onChange={(e) =>
+                    handleStatusChange(order._id.toString(), e.target.value)
+                  }
+                  className="border rounded-md px-3 py-1 text-sm focus:ring-2 focus:ring-green-400 disabled:opacity-50"
                 >
                   <option value="pending">Pending</option>
+                  <option value="out_for_delivery">Out for Delivery</option>
                   <option value="delivered">Delivered</option>
                   <option value="cancelled">Cancelled</option>
                 </select>
               </div>
             </div>
 
-            {/* Items */}
             <div className="mt-5 border-t pt-4">
               <p className="text-sm text-gray-600 mb-3">
                 {order.items.length} Items
@@ -156,10 +190,9 @@ const ManageOrders = () => {
               </div>
             </div>
 
-            {/* Footer */}
             <div className="flex justify-between items-center mt-5 border-t pt-4">
               <p className="flex items-center gap-2 text-sm text-gray-500 capitalize">
-                <Truck size={14} /> {order.status}
+                <Truck size={14} /> {order.status.replaceAll("_", " ")}
               </p>
               <p className="text-lg font-semibold text-green-600">
                 Total: ₹{order.totalAmount}
@@ -173,4 +206,3 @@ const ManageOrders = () => {
 };
 
 export default ManageOrders;
-// sdssdfsdfdfdsfdsfdsfsdfkjjjkj

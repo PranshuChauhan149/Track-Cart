@@ -6,6 +6,7 @@ import axios from "axios";
 
 dotenv.config();
 const app = express();
+app.use(express.json());
 
 const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
@@ -46,6 +47,17 @@ io.on("connection", (socket) => {
       { userId, location }
     );
 
+  })
+
+  app.post("/notify",(req,res)=>{
+    const {event,data,socketId} = req.body;
+    if(socketId){
+      io.to(socketId).emit(event,data)
+    }
+    else{
+      io.emit(event,data)
+    }
+    return res.status(200).json({success:true})
   })
 
   socket.on("disconnect", () => {
