@@ -3,13 +3,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  ChevronDown,
-  MapPin,
-  Package,
-  CreditCard,
-  Loader2,
-} from "lucide-react";
+import { ChevronDown, MapPin, Package, Loader2 } from "lucide-react";
+import { getsocket } from "@/lib/socket";
 
 interface OrderItem {
   name: string;
@@ -34,13 +29,18 @@ const MyOrder = () => {
   const [open, setOpen] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [statusMap, setStatusMap] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
         const res = await axios.get("/api/user/my-order");
         setOrders(res.data.orders);
-      } catch (err: any) {
+
+        const map: Record<string, string> = {};
+        res.data.orders.forEach((o: Order) => (map[o._id] = o.status));
+        setStatusMap(map);
+      } catch {
         setError("Failed to load orders");
       } finally {
         setLoading(false);
@@ -48,6 +48,21 @@ const MyOrder = () => {
     };
 
     fetchOrders();
+  }, []);
+
+  useEffect(() => {
+    const socket = getsocket();
+
+    socket.on("order-status-update", (data: { orderId: string; status: string }) => {
+      setStatusMap((prev) => ({
+        ...prev,
+        [data.orderId]: data.status,
+      }));
+    });
+
+    return () => {
+      socket.off("order-status-update");
+    };
   }, []);
 
   if (loading)
@@ -79,7 +94,6 @@ const MyOrder = () => {
             animate={{ opacity: 1, y: 0 }}
             className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden"
           >
-            {/* Header */}
             <button
               onClick={() => setOpen(open === order._id ? null : order._id)}
               className="w-full p-5 flex justify-between items-start text-left"
@@ -94,7 +108,7 @@ const MyOrder = () => {
 
                 <div className="flex gap-2">
                   <span className="px-3 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700">
-                    {order.status}
+                    {statusMap[order._id] || order.status}
                   </span>
                   <span className="px-3 py-1 text-xs rounded-full bg-blue-100 text-blue-700">
                     {order.paymentMethod}
@@ -111,7 +125,6 @@ const MyOrder = () => {
               </motion.div>
             </button>
 
-            {/* Items */}
             <AnimatePresence>
               {open === order._id && (
                 <motion.div
@@ -120,26 +133,27 @@ const MyOrder = () => {
                   exit={{ height: 0, opacity: 0 }}
                   className="border-t px-5 py-4 bg-gray-50"
                 >
-                  {order.items.map((item: any, i: number) => (
-                    <div
-                      key={i}
-                      className="flex items-center justify-between py-2"
-                    >
+                  <p className="mb-3 text-sm font-medium text-gray-700">
+                    Current Status:{" "}
+                    <span className="text-green-700">
+                      {statusMap[order._id] || order.status}
+                    </span>
+                  </p>
+
+                  {order.items.map((item, i) => (
+                    <div key={i} className="flex items-center justify-between py-2">
                       <div className="flex items-center gap-3">
                         <img
                           src={item.image}
                           className="w-14 h-14 rounded-lg object-cover border"
+                          alt={item.name}
                         />
                         <div>
                           <p className="font-medium text-sm">{item.name}</p>
-                          <p className="text-xs text-gray-500">
-                            Qty: {item.quantity}
-                          </p>
+                          <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
                         </div>
                       </div>
-                      <p className="font-semibold text-sm text-gray-700">
-                        ₹{item.price}
-                      </p>
+                      <p className="font-semibold text-sm text-gray-700">₹{item.price}</p>
                     </div>
                   ))}
 

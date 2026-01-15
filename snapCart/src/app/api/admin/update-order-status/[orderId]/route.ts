@@ -1,4 +1,5 @@
 import connectDb from "@/lib/DB";
+import emitEventHandler from "@/lib/emitEventHandler";
 import DeliveryAssignment from "@/models/deliveryAssignment";
 import orderModel from "@/models/order.model";
 import User from "@/models/user.model";
@@ -61,6 +62,8 @@ export async function POST(
 
       if (!candidates.length) {
         await order.save();
+
+        await emitEventHandler("order-status-update",{orderId:order._id,status:order.status})
         return NextResponse.json(
           { message: "No available delivery boy nearby" },
           { status: 200 }
@@ -72,6 +75,18 @@ export async function POST(
         broadcastedTo: candidates,
         status: "broadcasted",
       });
+
+      await deliveryAssignment.populate("order")
+
+       for (const boyId of candidates) {
+        const boy = await User.findById(boyId);
+        if (boy?.socketId) {
+          await emitEventHandler("new-assignment", {
+            assignmentId: deliveryAssignment._id,
+            order: deliveryAssignment.order,
+          });
+        }
+      }
 
       order.assignment = deliveryAssignment._id;
     }
@@ -90,6 +105,7 @@ export async function POST(
 
     await order.save();
     await order.populate("user");
+        await emitEventHandler("order-status-update",{orderId:order._id,status:order.status})
 
     return NextResponse.json(
       {

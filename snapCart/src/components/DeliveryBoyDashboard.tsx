@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { getsocket } from "@/lib/socket";
 
 const DeliveryBoyDashboard = () => {
   const [assignments, setAssignments] = useState<any[]>([]);
@@ -17,6 +18,22 @@ const DeliveryBoyDashboard = () => {
     };
 
     fetchAssignments();
+  }, []);
+
+  useEffect(() => {
+    const socket = getsocket();
+
+    socket.on("new-assignment", (deliveryAssignment: any) => {
+      setAssignments((prev) => {
+        const exists = prev.find((a) => a._id === deliveryAssignment._id);
+        if (exists) return prev;
+        return [deliveryAssignment, ...prev];
+      });
+    });
+
+    return () => {
+      socket.off("new-assignment");
+    };
   }, []);
 
   return (
@@ -51,6 +68,12 @@ const DeliveryBoyDashboard = () => {
               </div>
             </div>
           ))}
+
+          {!assignments.length && (
+            <p className="text-center text-gray-500 mt-10">
+              No delivery assignments yet.
+            </p>
+          )}
         </div>
       </div>
     </div>
