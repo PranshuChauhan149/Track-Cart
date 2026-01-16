@@ -6,6 +6,7 @@ import { getsocket } from "@/lib/socket";
 
 const DeliveryBoyDashboard = () => {
   const [assignments, setAssignments] = useState<any[]>([]);
+  const [acceptingId, setAcceptingId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchAssignments = async () => {
@@ -13,26 +14,43 @@ const DeliveryBoyDashboard = () => {
         const res = await axios.get("/api/delivery/get-assignments");
         setAssignments(res.data.assignments || []);
       } catch (error) {
-        console.log(error);
+        console.error("Fetch assignments failed:", error);
       }
     };
 
     fetchAssignments();
   }, []);
 
+  const handleAccept = async (id: string) => {
+    try {
+      setAcceptingId(id);
+
+     const res =  await axios.get(`/api/delivery/assignment/${id}/accept-assignment`);
+console.log(res.data);
+
+      setAssignments((prev) => prev.filter((a) => a._id !== id));
+    } catch (error) {
+      console.error("Accept failed:", error);
+    } finally {
+      setAcceptingId(null);
+    }
+  };
+
   useEffect(() => {
     const socket = getsocket();
 
-    socket.on("new-assignment", (deliveryAssignment: any) => {
+    const handler = (deliveryAssignment: any) => {
       setAssignments((prev) => {
         const exists = prev.find((a) => a._id === deliveryAssignment._id);
         if (exists) return prev;
         return [deliveryAssignment, ...prev];
       });
-    });
+    };
+
+    socket.on("new-assignment", handler);
 
     return () => {
-      socket.off("new-assignment");
+      socket.off("new-assignment", handler);
     };
   }, []);
 
@@ -50,16 +68,24 @@ const DeliveryBoyDashboard = () => {
               className="bg-white rounded-xl shadow-md p-5 border border-gray-200"
             >
               <p className="text-lg font-semibold text-gray-800">
-                Order #{a.order._id.slice(-6)}
+                Order #{a?.order?._id.slice(-6)}
               </p>
 
               <p className="text-sm text-gray-500 mt-1">
-                {a.order.address.fullAddress}
+                {a?.order?.address?.fullAddress}
               </p>
 
               <div className="flex gap-4 mt-4">
-                <button className="px-4 py-2 rounded-lg bg-green-600 text-white font-medium hover:bg-green-700 transition">
-                  Accept
+                <button
+                  onClick={() => handleAccept(a?._id)}
+                  disabled={acceptingId === a?._id}
+                  className={`px-4 py-2 rounded-lg text-white font-medium transition ${
+                    acceptingId === a?._id
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-green-600 hover:bg-green-700"
+                  }`}
+                >
+                  {acceptingId === a?._id ? "Accepting..." : "Accept"}
                 </button>
 
                 <button className="px-4 py-2 rounded-lg bg-red-500 text-white font-medium hover:bg-red-600 transition">
@@ -69,7 +95,7 @@ const DeliveryBoyDashboard = () => {
             </div>
           ))}
 
-          {!assignments.length && (
+          {!assignments?.length && (
             <p className="text-center text-gray-500 mt-10">
               No delivery assignments yet.
             </p>

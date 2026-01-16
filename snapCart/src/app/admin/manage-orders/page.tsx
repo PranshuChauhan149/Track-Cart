@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { getsocket } from "@/lib/socket";
+import { div } from "motion/react-m";
 
 const statusColors: any = {
   pending: "bg-yellow-100 text-yellow-700",
@@ -42,6 +43,8 @@ const ManageOrders = () => {
       try {
         const result = await axios.get("/api/admin/get-orders");
         setOrders(result.data.data || result.data);
+        console.log(orders);
+        
       } catch (error) {
         console.log(error);
       }
@@ -135,6 +138,11 @@ console.log(orders);
                       ? "Online Payment"
                       : "Cash on Delivery"}
                   </p>
+               {
+                  order.assignedDeliveryBoy && <div className="mt-4 bg-blue-500 w-[100px] h-[100px]">
+dsfsdsfsd
+                  </div>
+                }
                 </div>
               </div>
 
