@@ -1,6 +1,5 @@
 "use client";
 
-import { IOrder } from "@/models/order.model";
 import axios from "axios";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
@@ -17,6 +16,43 @@ import {
 import { motion } from "framer-motion";
 import { getsocket } from "@/lib/socket";
 import { div } from "motion/react-m";
+import mongoose from "mongoose";
+import { IUser } from "@/models/user.model";
+
+interface IOrder {
+  _id?: mongoose.Types.ObjectId;
+  user: mongoose.Types.ObjectId;
+
+  items: {
+    grocery: mongoose.Types.ObjectId;
+    name: string;
+    price: number;
+    unit: string;
+    image: string;
+    quantity: number;
+  }[];
+
+  isPaid: boolean
+  totalAmount: number;
+  paymentMethod: "cod" | "online";
+
+  address: {
+    fullName: string;
+    mobile: string;
+    city: string;
+    state: string;
+    pincode: string;
+    fullAddress: string;
+    latitude: number;
+    longitude: number;
+  };
+  assignment?: mongoose.Types.ObjectId
+  assignedDeliveryBoy?: IUser
+  status: "pending" | "out_for_delivery" | "delivered";
+
+  createdAt?: Date;
+  updatedAt?: Date;
+}
 
 const statusColors: any = {
   pending: "bg-yellow-100 text-yellow-700",
@@ -129,9 +165,12 @@ console.log(orders);
                   <p className="flex items-center gap-2">
                     <User size={14} /> {order.address.fullName}
                   </p>
-                  <p className="flex items-center gap-2">
+                  <a 
+                    href={`tel:${order.address.mobile}`}
+                    className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transition-colors"
+                  >
                     <Phone size={14} /> {order.address.mobile}
-                  </p>
+                  </a>
                   <p className="flex items-center gap-2">
                     <MapPin size={14} />
                     {order.address.city}, {order.address.state},{" "}
@@ -143,11 +182,32 @@ console.log(orders);
                       ? "Online Payment"
                       : "Cash on Delivery"}
                   </p>
-               {
-                  order.assignedDeliveryBoy && <div className="mt-4 bg-blue-500 w-[100px] h-[100px]">
-dsfsdsfsd
-                  </div>
-                }
+                  
+                  {order.assignedDeliveryBoy && (
+                    <div className="mt-3 p-4 rounded-xl bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200">
+                      <p className="flex items-center gap-2 text-blue-700 font-bold mb-2">
+                        <Truck size={16} />
+                        Delivery Boy Assigned
+                      </p>
+                      <div className="ml-6 space-y-1">
+                        <p className="flex items-center gap-2 text-sm text-blue-600">
+                          <User size={14} />
+                          {(order.assignedDeliveryBoy as any)?.name || 
+                           (order.assignedDeliveryBoy as any)?.email ||
+                           "N/A"}
+                        </p>
+                        {(order.assignedDeliveryBoy as any)?.mobile && (
+                          <a 
+                            href={`tel:${(order.assignedDeliveryBoy as any)?.mobile}`}
+                            className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transition-colors"
+                          >
+                            <Phone size={14} />
+                            {(order.assignedDeliveryBoy as any)?.mobile}
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -185,29 +245,38 @@ dsfsdsfsd
             </div>
 
             <div className="mt-5 border-t pt-4">
-              <p className="text-sm text-gray-600 mb-3">
-                {order.items.length} Items
+              <p className="text-sm text-gray-600 mb-3 font-semibold">
+                {order.items?.length || 0} Items
               </p>
 
               <div className="space-y-2">
-                {order.items.map((item: any, i: number) => (
-                  <motion.div
-                    key={i}
-                    whileHover={{ x: 4 }}
-                    className="flex items-center gap-3"
-                  >
-                    <Image
-                      src={item.image}
-                      alt={item.name}
-                      width={40}
-                      height={40}
-                      className="rounded-md border"
-                    />
-                    <p className="text-sm font-medium">
-                      {item.name} — ₹{item.price}/{item.unit}
-                    </p>
-                  </motion.div>
-                ))}
+                {order.items && order.items.length > 0 ? (
+                  order.items.map((item: any, i: number) => (
+                    <motion.div
+                      key={i}
+                      whileHover={{ x: 4 }}
+                      className="flex items-center gap-3 bg-gray-50 p-2 rounded-lg"
+                    >
+                      <Image
+                        src={item.image}
+                        alt={item.name}
+                        width={50}
+                        height={50}
+                        className="rounded-lg border-2 border-gray-200"
+                      />
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-gray-800">
+                          {item.name}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          ₹{item.price}/{item.unit} × {item.quantity || 1}
+                        </p>
+                      </div>
+                    </motion.div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-400 italic">No items found</p>
+                )}
               </div>
             </div>
 

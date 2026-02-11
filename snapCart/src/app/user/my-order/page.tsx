@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, MapPin, Package, Loader2 } from "lucide-react";
+import { ChevronDown, MapPin, Package, Loader2, User, Phone, Truck, Navigation } from "lucide-react";
 import { getsocket } from "@/lib/socket";
 
 interface OrderItem {
@@ -22,6 +22,7 @@ interface Order {
   totalAmount: number;
   status: string;
   paymentStatus?: string;
+  assignedDeliveryBoy?: any;
 }
 
 const MyOrder = () => {
@@ -166,6 +167,47 @@ const MyOrder = () => {
                       <p className="font-semibold text-sm text-gray-700">₹{item.price}</p>
                     </div>
                   ))}
+
+                  {order.assignedDeliveryBoy && (
+                    <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200">
+                      <p className="flex items-center gap-2 text-blue-700 font-bold mb-2">
+                        <Truck size={16} />
+                        Delivery Boy Assigned
+                      </p>
+                      <div className="ml-6 space-y-1">
+                        <p className="flex items-center gap-2 text-sm text-blue-600">
+                          <User size={14} />
+                          {order.assignedDeliveryBoy?.name || 
+                           order.assignedDeliveryBoy?.email ||
+                           "N/A"}
+                        </p>
+                        {order.assignedDeliveryBoy?.mobile && (
+                          <a 
+                            href={`tel:${order.assignedDeliveryBoy?.mobile}`}
+                            className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transition-colors"
+                          >
+                            <Phone size={14} />
+                            {order.assignedDeliveryBoy?.mobile}
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {(statusMap[order._id] === "out_for_delivery" || order.status === "out_for_delivery") && (
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="w-full mt-4 px-6 py-3 rounded-2xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold shadow-lg shadow-green-500/30 flex items-center justify-center gap-2 transition-all"
+                      onClick={() => {
+                        // Handle track order - could open a map modal or navigate to tracking page
+                        alert(`Tracking order #${order._id.slice(-6)}`);
+                      }}
+                    >
+                      <Navigation size={18} />
+                      Track Order
+                    </motion.button>
+                  )}
 
                   <div className="flex justify-between border-t pt-3 mt-3 font-semibold text-sm">
                     <span>Total</span>
