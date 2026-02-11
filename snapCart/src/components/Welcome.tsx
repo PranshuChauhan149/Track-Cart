@@ -7,26 +7,42 @@ type propType = {
 };
 const Welcome = ({ nextStep }: propType) => {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen text-center p-6 bg-linear-to-b from-green-100 to-white">
+    <div className="flex flex-col items-center justify-center min-h-screen text-center p-6 bg-gradient-to-br from-green-100 via-emerald-50 to-teal-50 relative overflow-hidden">
+      {/* Animated background blobs */}
       <motion.div
-        className="flex items-center gap-3 "
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.3 }}
+        animate={{ scale: [1, 1.2, 1], rotate: [0, 90, 0] }}
+        transition={{ duration: 20, repeat: Infinity }}
+        className="absolute top-20 right-20 w-72 h-72 bg-green-300 rounded-full blur-3xl opacity-30"
+      />
+      <motion.div
+        animate={{ scale: [1, 1.3, 1], rotate: [0, -90, 0] }}
+        transition={{ duration: 15, repeat: Infinity }}
+        className="absolute bottom-20 left-20 w-72 h-72 bg-emerald-300 rounded-full blur-3xl opacity-30"
+      />
+      <motion.div
+        className="flex items-center gap-3 mb-4 relative z-10"
+        initial={{ opacity: 0, y: -20, scale: 0.8 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.8, delay: 0.2 }}
       >
-        <ShoppingBasket className="w-10 h-10 text-green-600" />
-        <h1 className="text-4xl md:text-5xl font-extrabold text-green-700">
+        <motion.div
+          animate={{ rotate: [0, 5, -5, 0] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          <ShoppingBasket className="w-14 h-14 text-green-600 drop-shadow-lg" />
+        </motion.div>
+        <h1 className="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600">
           snapCart
         </h1>
       </motion.div>
       <motion.p
-        className="mt-4 text-gray-700 text-lg md:text-xl max-w-lg"
+        className="mt-4 text-gray-700 text-lg md:text-xl max-w-2xl leading-relaxed px-4 relative z-10"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.3 }}
+        transition={{ duration: 0.6, delay: 0.4 }}
       >
-        Your one-stop destination for fresh groceries, organic produce, and
-        daily essentials delivered right to your doorstep.
+        Your one-stop destination for <span className="font-bold text-green-600">fresh groceries</span>, organic produce, and
+        daily essentials delivered right to your doorstep. 🛒✨
       </motion.p>
       <motion.div
         className="flex items-center justify-center gap-10 mt-10"
@@ -39,13 +55,15 @@ const Welcome = ({ nextStep }: propType) => {
       </motion.div>
       <motion.button
         onClick={() => nextStep(2)}
-        className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-8 rounded-2xl shadow-md transition-all duration-200 mt-10"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.9 }}
+        className="inline-flex items-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-4 px-10 rounded-2xl shadow-2xl shadow-green-500/50 transition-all duration-200 mt-10 relative z-10"
+        initial={{ opacity: 0, y: 20, scale: 0.8 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.6, delay: 0.8 }}
+        whileHover={{ scale: 1.05, y: -2 }}
+        whileTap={{ scale: 0.95 }}
       >
-        Next
-        <ArrowRight />
+        Get Started
+        <ArrowRight className="w-5 h-5" />
       </motion.button>
     </div>
   );

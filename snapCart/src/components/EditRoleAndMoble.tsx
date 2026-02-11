@@ -63,15 +63,30 @@ const EditRoleAndMoble = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen w-full bg-gradient-to-br from-green-100 via-gray-100 to-green-50 p-6">
+    <div className="flex flex-col min-h-screen w-full bg-gradient-to-br from-green-100 via-emerald-50 to-teal-50 p-6 relative overflow-hidden">
+      {/* Animated background */}
+      <motion.div
+        animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.2, 0.3] }}
+        transition={{ duration: 8, repeat: Infinity }}
+        className="absolute top-0 right-0 w-96 h-96 bg-green-300 rounded-full blur-3xl"
+      />
+      <motion.div
+        animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.3, 0.2] }}
+        transition={{ duration: 10, repeat: Infinity }}
+        className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-300 rounded-full blur-3xl"
+      />
+
       <motion.h1
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="text-3xl md:text-4xl font-extrabold text-green-700 text-center mt-8"
+        className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 text-center mt-8 mb-4 relative z-10"
       >
         Select Your Role
       </motion.h1>
+      <p className="text-center text-gray-600 text-lg mb-8 relative z-10">
+        Choose how you want to use <span className="font-bold text-green-600">snapCart</span>
+      </p>
 
       <div className="flex flex-col md:flex-row justify-center items-center gap-6 mt-12">
         {roles.map((role, index) => {
@@ -84,29 +99,35 @@ const EditRoleAndMoble = () => {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.15 }}
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.05, y: -5 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => setSelectedRole(role.id)}
-              className={`relative cursor-pointer w-72 rounded-2xl border-2 p-6 shadow-lg transition-all
+              className={`relative cursor-pointer w-72 rounded-3xl border-3 p-8 shadow-xl transition-all
                 ${
                   isActive
-                    ? "border-green-600 bg-green-50 shadow-green-300"
-                    : "border-gray-200 bg-white hover:border-green-400"
+                    ? "border-green-600 bg-white shadow-2xl shadow-green-500/30"
+                    : "border-gray-200 bg-white/80 backdrop-blur hover:border-green-400"
                 }`}
             >
               {isActive && (
-                <CheckCircle className="absolute top-4 right-4 text-green-600" />
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute top-4 right-4"
+                >
+                  <CheckCircle className="text-green-600 w-8 h-8" />
+                </motion.div>
               )}
 
               <div
-                className={`mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full
+                className={`mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl transition-all
                   ${
                     isActive
-                      ? "bg-green-600 text-white"
+                      ? "bg-gradient-to-br from-green-500 to-emerald-500 text-white shadow-lg"
                       : "bg-green-100 text-green-700"
                   }`}
               >
-                <Icon size={32} />
+                <Icon size={40} />
               </div>
 
               <h2 className="text-center text-xl font-semibold text-gray-800">
@@ -120,8 +141,8 @@ const EditRoleAndMoble = () => {
         })}
       </div>
 
-      <motion.div className="mt-14 mx-auto w-full max-w-md">
-        <label className="block mb-2 text-sm font-semibold text-gray-700">
+      <motion.div className="mt-14 mx-auto w-full max-w-md relative z-10">
+        <label className="block mb-2 text-sm font-bold text-gray-700">
           Mobile Number
         </label>
 
@@ -133,26 +154,28 @@ const EditRoleAndMoble = () => {
             value={mobile}
             onChange={handleMobileChange}
             placeholder="Enter 10-digit mobile number"
-            className="w-full rounded-xl border border-gray-300 bg-white py-3 pl-12 pr-4"
+            className="w-full rounded-2xl border-2 border-gray-200 bg-white py-4 pl-12 pr-4 focus:border-green-500 focus:ring-2 focus:ring-green-500 transition-all"
           />
         </div>
 
-        {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
+        {error && <p className="mt-2 text-sm text-red-500 font-medium">{error}</p>}
       </motion.div>
 
-      <div className="mt-10 flex justify-center">
-        <button
+      <div className="mt-10 flex justify-center relative z-10">
+        <motion.button
           onClick={handleEdit}
           disabled={!selectedRole || mobile.length !== 10}
-          className={`rounded-xl px-10 py-3 font-semibold text-white transition-all
+          whileHover={{ scale: selectedRole && mobile.length === 10 ? 1.05 : 1, y: -2 }}
+          whileTap={{ scale: selectedRole && mobile.length === 10 ? 0.95 : 1 }}
+          className={`rounded-2xl px-12 py-4 font-bold text-white transition-all shadow-lg
             ${
               selectedRole && mobile.length === 10
-                ? "bg-green-600 hover:bg-green-700"
+                ? "bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-green-500/30"
                 : "bg-gray-400 cursor-not-allowed"
             }`}
         >
-          Go to Home
-        </button>
+          Get Started
+        </motion.button>
       </div>
     </div>
   );

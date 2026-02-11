@@ -12,6 +12,7 @@ import {
   MapPin,
   CreditCard,
   Truck,
+  ClipboardList,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { getsocket } from "@/lib/socket";
@@ -90,11 +91,15 @@ console.log(orders);
       initial="hidden"
       animate="show"
       variants={container}
-      className="min-h-screen bg-gray-50 px-6 py-8"
+      className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 px-6 py-8"
     >
-      <motion.div variants={itemAnim} className="flex items-center gap-3 mb-8">
-        <ArrowLeft className="cursor-pointer hover:text-green-600 transition" />
-        <h1 className="text-2xl font-semibold">Manage Orders</h1>
+      <motion.div variants={itemAnim} className="flex items-center gap-4 mb-8">
+        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg cursor-pointer hover:scale-105 transition">
+          <ClipboardList className="w-7 h-7 text-white" />
+        </div>
+        <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-gray-800 to-gray-600">
+          Manage Orders
+        </h1>
       </motion.div>
 
       <div className="space-y-6">
@@ -102,17 +107,17 @@ console.log(orders);
           <motion.div
             key={order._id}
             variants={itemAnim}
-            whileHover={{ scale: 1.01 }}
-            className="bg-white rounded-2xl shadow-sm border p-6 transition"
+            whileHover={{ scale: 1.01, y: -4 }}
+            className="bg-white rounded-3xl shadow-lg hover:shadow-2xl border border-gray-100 p-6 transition-all"
           >
             <div className="flex justify-between items-start">
               <div className="space-y-1">
-                <div className="flex items-center gap-2 text-green-600 font-semibold">
-                  <Package size={18} />
+                <div className="flex items-center gap-2 text-green-600 font-bold text-lg">
+                  <Package size={20} />
                   Order #{order._id.slice(-6)}
                 </div>
 
-                <span className="inline-flex items-center gap-1 text-xs px-3 py-1 rounded-full bg-red-100 text-red-600">
+                <span className="inline-flex items-center gap-1 text-xs font-bold px-4 py-1.5 rounded-full bg-gradient-to-r from-red-400 to-pink-400 text-white shadow-md">
                   {order.isPaid ? "Paid" : "Unpaid"}
                 </span>
 
@@ -146,11 +151,19 @@ dsfsdsfsd
                 </div>
               </div>
 
-              <div className="flex flex-col items-end gap-2">
+              <div className="flex flex-col items-end gap-3">
                 <span
-                  className={`px-3 py-1 rounded-full text-xs capitalize ${
-                    statusColors[order.status]
-                  }`}
+                  className={`px-4 py-2 rounded-full text-xs font-bold capitalize shadow-md
+                    ${
+                      order.status === "pending"
+                        ? "bg-gradient-to-r from-yellow-400 to-orange-400 text-white"
+                        : order.status === "out_for_delivery"
+                        ? "bg-gradient-to-r from-blue-400 to-cyan-400 text-white"
+                        : order.status === "delivered"
+                        ? "bg-gradient-to-r from-green-400 to-emerald-400 text-white"
+                        : "bg-gradient-to-r from-red-400 to-pink-400 text-white"
+                    }
+                  `}
                 >
                   {order.status.replaceAll("_", " ")}
                 </span>
@@ -161,7 +174,7 @@ dsfsdsfsd
                   onChange={(e) =>
                     handleStatusChange(order._id.toString(), e.target.value)
                   }
-                  className="border rounded-md px-3 py-1 text-sm focus:ring-2 focus:ring-green-400 disabled:opacity-50"
+                  className="border-2 border-gray-200 rounded-xl px-4 py-2 text-sm font-semibold focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:opacity-50 bg-white transition-all"
                 >
                   <option value="pending">Pending</option>
                   <option value="out_for_delivery">Out for Delivery</option>

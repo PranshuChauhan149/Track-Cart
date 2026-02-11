@@ -60,42 +60,44 @@ const { userData } = useSelector((state: RootState) => state.user);
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${slide.bg})` }}
         >
-          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-            <div className="text-center text-white px-6 max-w-2xl">
+          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/60 flex items-center justify-center">
+            <div className="text-center text-white px-6 max-w-3xl">
               <motion.div
-                initial={{ y: 20, opacity: 0 }}
+                initial={{ y: 30, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.3 }}
-                className="flex justify-center mb-6"
+                className="flex justify-center mb-8"
               >
-                <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center backdrop-blur shadow-lg">
-                  <Icon className="w-8 h-8 text-white" />
+                <div className="w-20 h-20 rounded-3xl bg-white/20 backdrop-blur-lg flex items-center justify-center shadow-2xl border-2 border-white/30">
+                  <Icon className="w-10 h-10 text-white" />
                 </div>
               </motion.div>
 
               <motion.h1
-                initial={{ y: 20, opacity: 0 }}
+                initial={{ y: 30, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.4 }}
-                className="text-4xl md:text-5xl font-extrabold mb-4"
+                className="text-5xl md:text-6xl font-black mb-6 leading-tight"
               >
                 {slide.title}
               </motion.h1>
 
               <motion.p
-                initial={{ y: 20, opacity: 0 }}
+                initial={{ y: 30, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.5 }}
-                className="text-lg text-gray-200 mb-6"
+                className="text-xl text-gray-100 mb-8 leading-relaxed"
               >
                 {slide.subtitle}
               </motion.p>
 
               <motion.button
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
+                initial={{ y: 30, opacity: 0, scale: 0.8 }}
+                animate={{ y: 0, opacity: 1, scale: 1 }}
                 transition={{ delay: 0.6 }}
-                className="px-8 py-3 rounded-full bg-green-500 hover:bg-green-600 text-white font-semibold shadow-lg transition"
+                whileHover={{ scale: 1.08, y: -5 }}
+                whileTap={{ scale: 0.95 }}
+                className="px-10 py-4 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold shadow-2xl shadow-green-500/50 transition-all text-lg"
               >
                 {slide.btnText}
               </motion.button>
@@ -105,13 +107,15 @@ const { userData } = useSelector((state: RootState) => state.user);
       </AnimatePresence>
 
       {/* Dots */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-20">
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3 z-20">
         {slides.map((_, i) => (
-          <button
+          <motion.button
             key={i}
             onClick={() => setCurrent(i)}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${
-              current === i ? "bg-white scale-125" : "bg-white/40"
+            whileHover={{ scale: 1.2 }}
+            whileTap={{ scale: 0.9 }}
+            className={`h-3 rounded-full transition-all duration-300 ${
+              current === i ? "bg-white w-10" : "bg-white/50 w-3"
             }`}
           />
         ))}

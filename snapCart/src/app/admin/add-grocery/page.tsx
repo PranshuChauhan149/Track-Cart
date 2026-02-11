@@ -85,10 +85,22 @@ const Page = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-white py-16 px-4 relative">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 py-16 px-4 relative overflow-hidden">
+      {/* Animated background */}
+      <motion.div
+        animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.2, 0.3] }}
+        transition={{ duration: 8, repeat: Infinity }}
+        className="absolute top-0 right-0 w-96 h-96 bg-green-300 rounded-full blur-3xl"
+      />
+      <motion.div
+        animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.3, 0.2] }}
+        transition={{ duration: 10, repeat: Infinity }}
+        className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-300 rounded-full blur-3xl"
+      />
+
       <Link
         href="/"
-        className="absolute top-6 left-6 flex items-center gap-2 text-green-600 hover:text-green-700"
+        className="absolute top-6 left-6 flex items-center gap-2 text-green-700 hover:text-green-800 bg-white/70 backdrop-blur px-4 py-2 rounded-full shadow-lg z-20 transition-all hover:scale-105"
       >
         <ArrowLeft className="w-5 h-5" />
         <span className="hidden md:inline text-sm font-medium">Back to Home</span>
@@ -98,9 +110,9 @@ const Page = () => {
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="bg-white rounded-2xl shadow-xl p-8 max-w-lg w-full"
+        className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl p-8 max-w-lg w-full border border-white/50 relative z-10"
       >
-        <h1 className="text-2xl font-extrabold text-gray-800 mb-6 text-center">
+        <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 mb-6 text-center">
           Add Grocery Item
         </h1>
 
@@ -109,12 +121,12 @@ const Page = () => {
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Name */}
           <div>
-            <label className="text-sm font-medium text-gray-700">Product Name</label>
-            <div className="mt-1 flex items-center gap-2 border rounded-xl px-4 py-2">
-              <Package className="w-4 h-4 text-gray-400" />
+            <label className="text-sm font-bold text-gray-700">Product Name</label>
+            <div className="mt-1 flex items-center gap-2 border-2 border-gray-200 rounded-2xl px-4 py-3 focus-within:border-green-500 focus-within:ring-2 focus-within:ring-green-500 transition-all">
+              <Package className="w-4 h-4 text-green-600" />
               <input
                 type="text"
-                className="flex-1 outline-none text-sm"
+                className="flex-1 outline-none text-sm bg-transparent"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
               />
@@ -123,9 +135,9 @@ const Page = () => {
 
           {/* Price */}
           <div>
-            <label className="text-sm font-medium text-gray-700">Price</label>
-            <div className="mt-1 flex items-center gap-2 border rounded-xl px-4 py-2">
-              <IndianRupee className="w-4 h-4 text-gray-400" />
+            <label className="text-sm font-bold text-gray-700">Price</label>
+            <div className="mt-1 flex items-center gap-2 border-2 border-gray-200 rounded-2xl px-4 py-3 focus-within:border-green-500 focus-within:ring-2 focus-within:ring-green-500 transition-all">
+              <IndianRupee className="w-4 h-4 text-green-600" />
               <input
                 type="number"
                 className="flex-1 outline-none text-sm"
@@ -200,13 +212,15 @@ const Page = () => {
             )}
           </div>
 
-          <button
+          <motion.button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-xl bg-green-500 hover:bg-green-600 disabled:opacity-60 text-white font-semibold shadow-md"
+            whileHover={{ scale: loading ? 1 : 1.02 }}
+            whileTap={{ scale: loading ? 1 : 0.98 }}
+            className="w-full py-4 rounded-2xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold shadow-lg shadow-green-500/30 transition-all"
           >
             {loading ? "Adding..." : "Add Grocery"}
-          </button>
+          </motion.button>
         </form>
       </motion.div>
     </div>

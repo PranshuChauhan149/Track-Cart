@@ -42,13 +42,15 @@ const CategorySlider = () => {
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
       viewport={{ once: false, amount: 0.5 }}
-      className="w-full py-12"
+      className="w-full py-16 bg-gradient-to-b from-white to-gray-50"
     >
       <div className="max-w-7xl mx-auto px-4">
         {/* Heading */}
-        <div className="flex justify-center items-center gap-2 mb-6">
-          <Grid className="w-6 h-6 text-gray-700" />
-          <h2 className="text-2xl font-extrabold text-gray-800">
+        <div className="flex justify-center items-center gap-3 mb-10">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
+            <Grid className="w-6 h-6 text-white" />
+          </div>
+          <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-gray-800 to-gray-600">
             Shop by Category
           </h2>
         </div>
@@ -71,25 +73,30 @@ const CategorySlider = () => {
 
           <div
             ref={sliderRef}
-            className="flex gap-4 overflow-x-auto pb-4 px-4 scrollbar-hide scroll-smooth"
+            className="flex gap-6 overflow-x-auto pb-4 px-4 scrollbar-hide scroll-smooth"
           >
             {categories.map((cat) => {
               const Icon = cat.icon;
               return (
                 <motion.div
                   key={cat.name}
-                  whileHover={{ scale: 1.06 }}
+                  whileHover={{ scale: 1.08, y: -5 }}
                   whileTap={{ scale: 0.97 }}
                   className={`
-                    min-w-[150px] h-32 rounded-2xl
+                    min-w-[170px] h-40 rounded-3xl
                     ${cat.color}
                     flex flex-col items-center justify-center
-                    shadow-md cursor-pointer
-                    transition
+                    shadow-lg hover:shadow-2xl cursor-pointer
+                    transition-all border-2 border-white/50
                   `}
                 >
-                  <Icon className="w-8 h-8 text-gray-700 mb-2" />
-                  <p className="text-sm font-semibold text-gray-700 text-center px-2 capitalize">
+                  <motion.div
+                    whileHover={{ rotate: [0, -10, 10, 0] }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <Icon className="w-10 h-10 text-gray-700 mb-3" />
+                  </motion.div>
+                  <p className="text-sm font-bold text-gray-700 text-center px-3 capitalize">
                     {cat.name}
                   </p>
                 </motion.div>

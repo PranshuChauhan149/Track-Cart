@@ -80,11 +80,20 @@ const MyOrder = () => {
     );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-white px-4 py-10">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 px-4 py-10">
       <div className="max-w-5xl mx-auto space-y-6">
-        <h1 className="text-2xl font-bold flex items-center gap-2 text-gray-800">
-          <Package className="text-green-600" /> My Orders
-        </h1>
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-4 mb-8"
+        >
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center shadow-lg">
+            <Package className="text-white w-7 h-7" />
+          </div>
+          <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-gray-800 to-gray-600">
+            My Orders
+          </h1>
+        </motion.div>
 
         {orders.map((order) => (
           <motion.div
@@ -92,7 +101,8 @@ const MyOrder = () => {
             layout
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden"
+            whileHover={{ y: -4 }}
+            className="bg-white rounded-3xl shadow-lg hover:shadow-2xl border border-gray-100 overflow-hidden transition-all"
           >
             <button
               onClick={() => setOpen(open === order._id ? null : order._id)}
@@ -106,11 +116,11 @@ const MyOrder = () => {
                   {new Date(order.createdAt).toLocaleString()}
                 </p>
 
-                <div className="flex gap-2">
-                  <span className="px-3 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700">
+                <div className="flex gap-2 flex-wrap">
+                  <span className="px-4 py-1.5 text-xs font-bold rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 text-white shadow-md">
                     {statusMap[order._id] || order.status}
                   </span>
-                  <span className="px-3 py-1 text-xs rounded-full bg-blue-100 text-blue-700">
+                  <span className="px-4 py-1.5 text-xs font-bold rounded-full bg-gradient-to-r from-blue-400 to-cyan-400 text-white shadow-md">
                     {order.paymentMethod}
                   </span>
                 </div>

@@ -38,13 +38,14 @@ const GroceryItemCard = ({ item }: { item: IGrocery }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className="bg-white rounded-2xl shadow-md hover:shadow-xl transition overflow-hidden"
+      whileHover={{ y: -8 }}
+      className="bg-white rounded-3xl shadow-md hover:shadow-2xl transition-all overflow-hidden border border-gray-100 group"
     >
       {/* Image with scale only */}
       <motion.div
         whileHover={{ scale: 1.08 }}
         transition={{ duration: 0.3 }}
-        className="relative w-full h-40 bg-gray-100 p-3 overflow-hidden"
+        className="relative w-full h-48 bg-gradient-to-br from-gray-50 to-gray-100 p-4 overflow-hidden"
       >
         {item.image ? (
           <Image
@@ -52,7 +53,7 @@ const GroceryItemCard = ({ item }: { item: IGrocery }) => {
             alt={item.name || "Grocery item"}
             fill
             sizes="(max-width: 768px) 100vw, 25vw"
-            className="object-cover rounded-xl"
+            className="object-cover rounded-2xl"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
@@ -62,46 +63,48 @@ const GroceryItemCard = ({ item }: { item: IGrocery }) => {
       </motion.div>
 
       {/* Content */}
-      <div className="p-4">
-        <h3 className="text-base font-semibold text-gray-800 line-clamp-1">
+      <div className="p-5">
+        <h3 className="text-base font-bold text-gray-800 line-clamp-1 group-hover:text-green-600 transition">
           {item.name}
         </h3>
 
-        <p className="text-xs text-gray-500 capitalize">{item.category}</p>
+        <p className="text-xs text-gray-500 capitalize mt-1 font-medium">{item.category}</p>
 
-        <div className="flex items-center justify-between mt-3">
-          <p className="text-lg font-bold text-green-600">
+        <div className="flex items-center justify-between mt-4">
+          <p className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600">
             ₹{item.price}
-            <span className="text-sm text-gray-500"> / {item.unit}</span>
+            <span className="text-xs text-gray-500 font-normal"> / {item.unit}</span>
           </p>
 
           {quantity === 0 ? (
             <motion.button
               onClick={handleAdd}
               whileTap={{ scale: 0.9 }}
-              whileHover={{ scale: 1.08 }}
-              className="flex items-center gap-1 px-3 py-1.5 text-sm bg-green-600 text-white rounded-full hover:bg-green-700 transition"
+              whileHover={{ scale: 1.1 }}
+              className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-full hover:from-green-700 hover:to-emerald-700 transition shadow-lg shadow-green-500/30"
             >
               <ShoppingCart className="w-4 h-4" />
               Add
             </motion.button>
           ) : (
-            <div className="flex items-center gap-2 bg-green-50 rounded-full px-3 py-1">
-              <button
+            <div className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full px-3 py-1.5 shadow-lg">
+              <motion.button
+                whileTap={{ scale: 0.8 }}
                 onClick={() => dispatch(decrementQuantity(item._id as string))}
-                className="w-6 h-6 flex items-center justify-center rounded-full bg-green-600 text-white"
+                className="w-7 h-7 flex items-center justify-center rounded-full bg-white text-green-600 font-bold"
               >
-                <Minus className="w-3 h-3" />
-              </button>
+                <Minus className="w-3.5 h-3.5" />
+              </motion.button>
 
-              <span className="text-sm font-semibold">{quantity}</span>
+              <span className="text-sm font-bold text-white min-w-[24px] text-center">{quantity}</span>
 
-              <button
+              <motion.button
+                whileTap={{ scale: 0.8 }}
                 onClick={() => dispatch(incrementQuantity(item._id as string))}
-                className="w-6 h-6 flex items-center justify-center rounded-full bg-green-600 text-white"
+                className="w-7 h-7 flex items-center justify-center rounded-full bg-white text-green-600 font-bold"
               >
-                <Plus className="w-3 h-3" />
-              </button>
+                <Plus className="w-3.5 h-3.5" />
+              </motion.button>
             </div>
           )}
         </div>

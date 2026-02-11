@@ -7,36 +7,61 @@ const Page = () => {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-6">
-      <div className="bg-white rounded-2xl shadow-xl p-10 max-w-md w-full text-center">
-        <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-red-100 flex items-center justify-center">
-          <ShieldAlert className="w-8 h-8 text-red-600" />
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-red-50 flex items-center justify-center px-6 relative overflow-hidden">
+      {/* Animated background */}
+      <motion.div
+        animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.3, 0.2] }}
+        transition={{ duration: 8, repeat: Infinity }}
+        className="absolute top-0 right-0 w-96 h-96 bg-red-300 rounded-full blur-3xl"
+      />
+      <motion.div
+        animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.2, 0.3] }}
+        transition={{ duration: 10, repeat: Infinity }}
+        className="absolute bottom-0 left-0 w-96 h-96 bg-orange-300 rounded-full blur-3xl"
+      />
 
-        <h1 className="text-2xl font-extrabold text-gray-800 mb-2">
+      <motion.div
+        initial={{ opacity: 0, y: 50, scale: 0.9 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.6, type: "spring" }}
+        className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl p-12 max-w-md w-full text-center border border-white/50 relative z-10"
+      >
+        <motion.div
+          animate={{ rotate: [0, 10, -10, 0] }}
+          transition={{ duration: 2, repeat: Infinity }}
+          className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center shadow-2xl shadow-red-500/50"
+        >
+          <ShieldAlert className="w-12 h-12 text-white" />
+        </motion.div>
+
+        <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-orange-600 mb-3">
           Access Denied
         </h1>
-        <p className="text-gray-600 mb-6">
-          You do not have permission to access this page. This area is restricted to administrators only.
+        <p className="text-gray-600 mb-8 text-lg leading-relaxed">
+          You do not have permission to access this page. This area is restricted to authorized users only.
         </p>
 
-        <div className="flex gap-3 justify-center">
-          <button
+        <div className="flex gap-4 justify-center">
+          <motion.button
+            whileHover={{ scale: 1.05, x: -5 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => router.back()}
-            className="flex items-center gap-2 px-5 py-2 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium transition"
+            className="flex items-center gap-2 px-6 py-3 rounded-full border-2 border-gray-300 hover:border-gray-400 bg-white text-gray-800 font-bold transition-all shadow-md"
           >
             <ArrowLeft className="w-4 h-4" />
             Go Back
-          </button>
+          </motion.button>
 
-          <button
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => router.push("/")}
-            className="px-5 py-2 rounded-full bg-green-500 hover:bg-green-600 text-white font-medium shadow transition"
+            className="px-6 py-3 rounded-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold shadow-lg shadow-green-500/30 transition-all"
           >
             Go Home
-          </button>
+          </motion.button>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
