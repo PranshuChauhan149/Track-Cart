@@ -8,6 +8,7 @@ export async function GET() {
     const session = await auth();
 
     const userId = session?.user?.id;
+    const sessionEmail = session?.user?.email;
 
     if (!userId) {
       return NextResponse.json(
@@ -18,12 +19,21 @@ export async function GET() {
 
     await connectDb();
 
-    const user = await User.findById(userId)
+    let user = await User.findById(userId)
       .select("-password")
       .lean();
 
+    if (!user && typeof sessionEmail === "string" && sessionEmail.length > 0) {
+      user = await User.findOne({ email: sessionEmail })
+        .select("-password")
+        .lean();
+    }
+
     if (!user) {
-      return NextResponse.json({ message: "User not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Invalid session user, please login again" },
+        { status: 401 }
+      );
     }
 
     return NextResponse.json({ user }, { status: 200 });

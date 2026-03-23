@@ -35,7 +35,6 @@ export async function proxy(req: NextRequest) {
     return NextResponse.redirect(new URL("/unauthorized", req.url));
   }
 
-  console.log(token);
   return NextResponse.next();
 }
 

@@ -8,21 +8,29 @@ import UserDashboard from "@/components/UserDashboard";
 import connectDb from "@/lib/DB";
 import User from "@/models/user.model";
 import React from "react";
+import { redirect } from "next/navigation";
 
 const Home = async () => {
   await connectDb();
   const session = await auth();
 
-  if (!session?.user?.id) {
-    return null; // middleware will handle redirect
+  const userId = session?.user?.id;
+  const sessionEmail = session?.user?.email;
+
+  if (!userId) {
+    redirect("/login");
   }
 
-  const user = await User.findById(session?.user?.id);
+  let user = await User.findById(userId);
+
+  if (!user && typeof sessionEmail === "string" && sessionEmail.length > 0) {
+    user = await User.findOne({ email: sessionEmail });
+  }
 
   const plainUser = JSON.parse(JSON.stringify(user));
 
   if (!user) {
-    return null; // let middleware handle it
+    redirect("/login");
   }
 
   const inComplete =

@@ -5,11 +5,16 @@ import axios from "axios";
 import { getsocket } from "@/lib/socket";
 import { motion } from "framer-motion";
 import { Package, MapPin, Truck } from "lucide-react";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
 
 const DeliveryBoyDashboard = () => {
   const [assignments, setAssignments] = useState<any[]>([]);
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
-
+  const [currentOrder, setCurrentOrder] = useState<any>(null);
+  const { user } = useSelector((state: RootState) => state);
+  const [activeOrder,setActiveOrder] = useState<any>(null);
+  const [userLocation,setUserLocation] = useState<any>(null)
   useEffect(() => {
     const fetchAssignments = async () => {
       try {
@@ -74,6 +79,89 @@ const DeliveryBoyDashboard = () => {
       socket.off("new-assignment", handler);
     };
   }, []);
+
+  const fetchCurrentOrder = async () => {
+    try {
+      const res = await axios.get("/api/delivery/current-order");
+      console.log("Current order:", res.data);
+      if (res.data.activeAssignment) {
+        setActiveOrder(res.data.activeAssignment);
+      }
+    } catch (error) {
+      console.log("Error fetching current order:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCurrentOrder();
+  }, [user]);
+
+
+  if(activeOrder && userLocation){
+    return (
+      <div className="p-4 pt-[120px] min-h-screen bg-gray-50">
+        <div className="max-w-3xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-3xl shadow-xl p-6 mb-4"
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+                <Package className="w-7 h-7 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-800">Active Delivery</h1>
+                <p className="text-sm text-gray-500">In Progress</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm font-semibold text-gray-500 mb-1">Order Number</p>
+                <p className="text-xl font-bold text-gray-800">
+                  #{activeOrder?.order?._id?.slice(-8) || activeOrder?.order?.id?.slice(-8) || "N/A"}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-sm font-semibold text-gray-500 mb-1 flex items-center gap-1">
+                  <MapPin className="w-4 h-4" />
+                  Delivery Address
+                </p>
+                <p className="text-base text-gray-800">
+                  {activeOrder?.order?.address?.fullAddress || "Address not available"}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200">
+                <div>
+                  <p className="text-sm font-semibold text-gray-500 mb-1">Your Location</p>
+                  <p className="text-sm text-gray-700">
+                    {userLocation?.latitude?.toFixed(6)}, {userLocation?.longitude?.toFixed(6)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-500 mb-1">Status</p>
+                  <p className="text-sm font-bold text-green-600">{activeOrder?.status || "Assigned"}</p>
+                </div>
+              </div>
+
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full mt-4 px-6 py-3 rounded-2xl bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg"
+              >
+                Mark as Delivered
+              </motion.button>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    )
+  }
+
+
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
